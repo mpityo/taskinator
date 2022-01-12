@@ -1,26 +1,46 @@
 var formEl = document.querySelector("#task-form");
 var tasksToDoEl = document.querySelector("#tasks-to-do");
 var taskIdCounter = 0;
+var pageContentEl = document.querySelector("#page-content");
 
+// handles action when SUBMIT is completed for the FORM
 var taskFormHandler = function () {
+	// prevents the page from reloading after clicking a button
 	event.preventDefault();
+	
+	// get information from the forms and check to make sure there's values
 	var taskNameInput = document.querySelector("input[name='task-name']").value;
 	var taskTypeInput = document.querySelector("select[name='task-type']").value;
-	
 	if (!taskNameInput || !taskTypeInput) {
 		alert("You need to fill out the task form!");
 		return false;
 	}
-	
+	// assign values from user input to an object and pass to createTaskEl() to construct and display list
 	var taskDataObj = {
 		name: taskNameInput,
 		type: taskTypeInput
 	};
-	
 	createTaskEl(taskDataObj);
 	// reset the form using reset which only works for form elements
 	formEl.reset();
-}
+};
+
+// handles when a BUTTON is clicked in the main PAGE CONTENT (add, delete, move)
+var taskButtonHandler = function(event) {
+	var targetEl = event.target;
+	
+	// edit button clicked
+	if (targetEl.matches(".edit-btn")) {
+		var taskId = targetEl.getAttribute("data-task-id");
+		editTask(taskId);
+	}
+	
+	// delete button clicked
+	if (event.target.matches(".delete-btn")) {
+		var taskId = targetEl.getAttribute("data-task-id");
+		deleteTask(taskId);
+	}
+};
 
 var createTaskEl = function (taskDataObj) {
 	// create list item
@@ -45,7 +65,7 @@ var createTaskEl = function (taskDataObj) {
 	tasksToDoEl.appendChild(listItemEl);
 
 	taskIdCounter++;
-}
+};
 
 var createTaskActions = function (taskId) {
 	var actionContainerEl = document.createElement("div");
@@ -83,6 +103,27 @@ var createTaskActions = function (taskId) {
 	actionContainerEl.appendChild(statusSelectEl);
 
 	return actionContainerEl;
-}
+};
+
+var deleteTask = function (taskId) {
+	// having .task-item right next to [data-task-id] means the property must be on the same element
+	var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+	taskSelected.remove();
+};
+
+var editTask = function (taskId) {
+	formEl.setAttribute("data-task-id", taskId);
+	// get task list item element
+	var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+	
+	// get content from task name and type
+	var taskName = taskSelected.querySelector("h3.task-name").textContent;
+	var taskType = taskSelected.querySelector("span.task-type").textContent;
+	
+	document.querySelector("input[name='task-name']").value = taskName;
+	document.querySelector("select[name='task-type']").value = taskType;
+	document.querySelector("#save-task").textContent = "Save Task";
+};
 
 formEl.addEventListener("submit", taskFormHandler);
+pageContentEl.addEventListener("click", taskButtonHandler);
