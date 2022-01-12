@@ -56,7 +56,20 @@ var taskButtonHandler = function(event) {
 
 // handles when a change in DROP DOWN for a task is changed
 var taskStatusChangeHandler = function (event) {
-	console.log(event.target);
+	// get the task item's id
+	var taskId = event.target.getAttribute("data-task-id");
+	// get currently selected option and convert to lower case
+	var statusValue = event.target.value.toLowerCase();
+	// find the parent task item element based on id
+	var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+	
+	if (statusValue === "to do") {
+		tasksToDoEl.appendChild(taskSelected);
+	} else if (statusValue === "in progress") {
+		tasksInProgressEl.appendChild(taskSelected);
+	} else if (statusValue === "completed") {
+		tasksCompletedEl.appendChild(taskSelected);
+	}
 };
 
 var createTaskEl = function (taskDataObj) {
