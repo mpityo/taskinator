@@ -100,17 +100,30 @@ var createTaskEl = function (taskDataObj) {
 	listItemEl.appendChild(taskInfoEl);
 
 	// get buttons and drop down for list and append to list item
-	var taskActionsEl = createTaskActions(taskIdCounter);
+	if (!taskDataObj.id) {
+		var taskActionsEl = createTaskActions(taskIdCounter);
+	} else {
+		var taskActionsEl = createTaskActions(taskDataObj.id);
+	}
 	listItemEl.appendChild(taskActionsEl);
 
-	// add entire list item to list
-	tasksToDoEl.appendChild(listItemEl);
+	// add entire list item to list, depending on where it is
+	if (taskDataObj.status === "to-do") {
+		tasksToDoEl.appendChild(listItemEl);
+	} else if (taskDataObj.status === "in-progress") {
+		tasksInProgressEl.appendChild(listItemEl);
+	} else if (taskDataObj.status === "completed") {
+		tasksCompletedEl.appendChild(listItemEl);
+	}
 	
-	// assign the id for the current task to the tasks array, which is used for local storage
-	// then increment taskId by one for the next task
-	taskDataObj.id = taskIdCounter;
-	tasks.push(taskDataObj);
-	saveTasks();
+	// only go through if the object doesn't already have an id attached (for loading saved files)
+	if (!taskDataObj.id) {
+		// assign the id for the current task to the tasks array, which is used for local storage
+		// then increment taskId by one for the next task
+		taskDataObj.id = taskIdCounter;
+		tasks.push(taskDataObj);
+		saveTasks();
+	}
 	taskIdCounter++;
 };
 
@@ -207,7 +220,27 @@ var completeEditTask = function (taskName, taskType, taskId) {
 var saveTasks = function () {
 	localStorage.setItem("tasks", JSON.stringify(tasks));
 }
+var loadTasks = function () {
+	// get task items from local storage and convert back to objects if valid
+	tasks = localStorage.getItem("tasks");
+	if (!tasks) {
+		tasks = [];
+		return false;
+	}
+	tasks = JSON.parse(tasks);
+	
+	// iterate through a tasks array and create task elements on the page from it
+	for (var i = 0; i < tasks.length; i++) {
+		console.log(tasks[i]);
+		createTaskEl(tasks[i]);
+	}
+	for (var i = 0; i < tasks.length; i++) {
+		tasks[i].id = i;
+		console.log(tasks[i] + " new id");
+	}
+}
 
 formEl.addEventListener("submit", taskFormHandler);
 pageContentEl.addEventListener("click", taskButtonHandler);
 pageContentEl.addEventListener("change", taskStatusChangeHandler);
+loadTasks();
