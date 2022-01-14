@@ -5,6 +5,7 @@ var pageContentEl = document.querySelector("#page-content");
 var tasksInProgressEl = document.querySelector("#tasks-in-progress");
 var tasksCompletedEl = document.querySelector("#tasks-completed");
 var tasks = [];
+var loadingTask = false;
 
 // handles action when SUBMIT is completed for the FORM
 var taskFormHandler = function () {
@@ -100,24 +101,20 @@ var createTaskEl = function (taskDataObj) {
 	listItemEl.appendChild(taskInfoEl);
 
 	// get buttons and drop down for list and append to list item
-	if (!taskDataObj.id) {
-		var taskActionsEl = createTaskActions(taskIdCounter);
-	} else {
-		var taskActionsEl = createTaskActions(taskDataObj.id);
-	}
+	var taskActionsEl = createTaskActions(taskIdCounter);
 	listItemEl.appendChild(taskActionsEl);
 
 	// add entire list item to list, depending on where it is
-	if (taskDataObj.status === "to-do") {
+	if (taskDataObj.status === "to-do" || !taskDataObj.status) {
 		tasksToDoEl.appendChild(listItemEl);
-	} else if (taskDataObj.status === "in-progress") {
+	} else if (taskDataObj.status === "in progress") {
 		tasksInProgressEl.appendChild(listItemEl);
 	} else if (taskDataObj.status === "completed") {
 		tasksCompletedEl.appendChild(listItemEl);
 	}
 	
-	// only go through if the object doesn't already have an id attached (for loading saved files)
-	if (!taskDataObj.id) {
+	// only go through if objects are not being loaded
+	if (!loadingTask) {
 		// assign the id for the current task to the tasks array, which is used for local storage
 		// then increment taskId by one for the next task
 		taskDataObj.id = taskIdCounter;
@@ -228,16 +225,16 @@ var loadTasks = function () {
 		return false;
 	}
 	tasks = JSON.parse(tasks);
+	loadingTask = true;
 	
 	// iterate through a tasks array and create task elements on the page from it
 	for (var i = 0; i < tasks.length; i++) {
-		console.log(tasks[i]);
 		createTaskEl(tasks[i]);
 	}
 	for (var i = 0; i < tasks.length; i++) {
 		tasks[i].id = i;
-		console.log(tasks[i] + " new id");
 	}
+	loadingTask = false;
 }
 
 formEl.addEventListener("submit", taskFormHandler);
